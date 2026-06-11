@@ -12,15 +12,15 @@ Add end-to-end validation to `CreateBusiness` so invalid requests do not append 
 
 ## Acceptance criteria
 
-- [ ] Blank or whitespace-only Business names are rejected.
-- [ ] Invalid manager emails are rejected.
-- [ ] Invitation expiry in the past is rejected.
-- [ ] Invitation expiry beyond the platform maximum is rejected.
-- [ ] Rejected requests do not append `BusinessCreated`, `BusinessManagerInvited`, or `BusinessBookabilityChanged` events.
-- [ ] Rejected requests return clear problem details suitable for API clients.
-- [ ] Integration tests cover each invalid request path through the Server.
-- [ ] Unit tests cover validation rules without HTTP transport concerns.
-- [ ] Validation preserves the happy path from issue 01.
+- [x] Blank or whitespace-only Business names are rejected.
+- [x] Invalid manager emails are rejected.
+- [x] Invitation expiry in the past is rejected.
+- [x] Invitation expiry beyond the platform maximum is rejected.
+- [x] Rejected requests do not append `BusinessCreated`, `BusinessManagerInvited`, or `BusinessBookabilityChanged` events.
+- [x] Rejected requests return clear problem details suitable for API clients.
+- [x] Integration tests cover each invalid request path through the Server.
+- [x] Unit tests cover validation rules without HTTP transport concerns.
+- [x] Validation preserves the happy path from issue 01.
 
 ## Blocked by
 
