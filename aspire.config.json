@@ -1,0 +1,6 @@
+{
+  "appHost": {
+    "path": "BookingPlatform.AppHost/BookingPlatform.AppHost.csproj"
+  },
+  "channel": "stable"
+}
