@@ -14,17 +14,17 @@ The Business Manager Invitation does not send email yet. For this slice, the inv
 
 ## Acceptance criteria
 
-- [ ] A valid `CreateBusiness` request creates a Registered Business with a generated Business id.
-- [ ] A valid `CreateBusiness` request creates a generated Business Manager Invitation id.
-- [ ] The Business stream contains `BusinessCreated`, `BusinessManagerInvited`, and `BusinessBookabilityChanged` in one successful transaction.
-- [ ] `BusinessBookabilityChanged` records status `Unbookable` with structured reasons including `ManagerNotAccepted` and `OnboardingIncomplete`.
-- [ ] The response includes Business id, invitation id, Bookability status, and Bookability Reasons.
-- [ ] The invitation details are persisted in the `BusinessManagerInvited` event and returned in the response; no email is sent.
-- [ ] Duplicate Business names are allowed.
-- [ ] Integration tests cover the successful HTTP/API behavior using the Server and Booking Database.
-- [ ] Integration tests verify the expected Business stream events are persisted.
-- [ ] Unit tests cover the Business domain decision that produces the initial events and Bookability status.
-- [ ] Architecture tests are expanded if needed to preserve thin endpoint behavior and keep Marten/JasperFx/Wolverine.Marten infrastructure dependencies out of endpoint/domain decision code.
+- [x] A valid `CreateBusiness` request creates a Registered Business with a generated Business id.
+- [x] A valid `CreateBusiness` request creates a generated Business Manager Invitation id.
+- [x] The Business stream contains `BusinessCreated`, `BusinessManagerInvited`, and `BusinessBookabilityChanged` in one successful transaction.
+- [x] `BusinessBookabilityChanged` records status `Unbookable` with structured reasons including `ManagerNotAccepted` and `OnboardingIncomplete`.
+- [x] The response includes Business id, invitation id, Bookability status, and Bookability Reasons.
+- [x] The invitation details are persisted in the `BusinessManagerInvited` event and returned in the response; no email is sent.
+- [x] Duplicate Business names are allowed.
+- [x] Integration tests cover the successful HTTP/API behavior using the Server and Booking Database.
+- [x] Integration tests verify the expected Business stream events are persisted.
+- [x] Unit tests cover the Business domain decision that produces the initial events and Bookability status.
+- [x] Architecture tests are expanded if needed to preserve thin endpoint behavior and keep Marten/JasperFx/Wolverine.Marten infrastructure dependencies out of endpoint/domain decision code.
 
 ## Blocked by
 

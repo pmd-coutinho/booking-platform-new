@@ -10,21 +10,16 @@ public static class CreateBusinessEndpoint
     [WolverinePost("/api/businesses")]
     public static (CreateBusinessResponse, IStartStream) Post(CreateBusinessRequest request)
     {
-        var businessId = Guid.NewGuid();
-        var invitationId = Guid.NewGuid();
-        var status = "Unbookable";
-        var reasons = new[] { "ManagerNotAccepted", "OnboardingIncomplete" };
+        var (businessId, invitationId, events) = Business.Create(
+            request.BusinessName,
+            request.ManagerEmail,
+            request.InvitationExpiresAt);
 
-        var events = new object[]
-        {
-            new BusinessCreated(businessId, request.BusinessName),
-            new BusinessManagerInvited(invitationId, request.ManagerEmail, request.InvitationExpiresAt),
-            new BusinessBookabilityChanged(status, reasons)
-        };
+        var bookability = (BusinessBookabilityChanged)events[2];
 
         var start = StartStream<Business>(businessId, events);
 
-        return (new CreateBusinessResponse(businessId, invitationId, status, reasons), start);
+        return (new CreateBusinessResponse(businessId, invitationId, bookability.Status, bookability.Reasons), start);
     }
 }
 

@@ -1,4 +1,7 @@
 using Alba;
+using BookingPlatform.Server.Modules.Businesses.Domain;
+using Marten;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -53,6 +56,45 @@ public class CreateBusinessTests : IAsyncLifetime
         Assert.Equal("Unbookable", result.BookabilityStatus);
         Assert.Contains("ManagerNotAccepted", result.BookabilityReasons);
         Assert.Contains("OnboardingIncomplete", result.BookabilityReasons);
+    }
+
+    [Fact]
+    public async Task Should_persist_expected_business_stream_events()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "Acme Salon",
+            ManagerEmail = "manager@acme.com",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(7)
+        };
+
+        var response = await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.StatusCodeShouldBe(200);
+        });
+
+        var result = await response.ReadAsJsonAsync<CreateBusinessResponse>();
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var stream = await session.Events.FetchStreamAsync(result!.BusinessId);
+
+        Assert.Equal(3, stream.Count);
+
+        var created = Assert.IsType<BusinessCreated>(stream[0].Data);
+        Assert.Equal(result.BusinessId, created.BusinessId);
+        Assert.Equal("Acme Salon", created.BusinessName);
+
+        var invited = Assert.IsType<BusinessManagerInvited>(stream[1].Data);
+        Assert.Equal(result.InvitationId, invited.InvitationId);
+        Assert.Equal("manager@acme.com", invited.ManagerEmail);
+
+        var bookability = Assert.IsType<BusinessBookabilityChanged>(stream[2].Data);
+        Assert.Equal("Unbookable", bookability.Status);
+        Assert.Contains("ManagerNotAccepted", bookability.Reasons);
+        Assert.Contains("OnboardingIncomplete", bookability.Reasons);
     }
 }
 
