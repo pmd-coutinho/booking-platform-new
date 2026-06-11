@@ -11,8 +11,9 @@ public class BusinessTests
         var businessName = "Acme Salon";
         var managerEmail = "manager@acme.com";
         var expiresAt = DateTimeOffset.UtcNow.AddDays(7);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result = Business.Create(businessName, managerEmail, expiresAt);
+        var result = Business.Create(businessName, managerEmail, expiresAt, actor);
 
         Assert.True(result.IsSuccess);
         Assert.NotEqual(Guid.Empty, result.BusinessId);
@@ -35,14 +36,25 @@ public class BusinessTests
     }
 
     [Fact]
+    public void Create_includes_actor_context_in_result()
+    {
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
+        var result = Business.Create("Acme Salon", "manager@acme.com", DateTimeOffset.UtcNow.AddDays(7), actor);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(actor, result.Actor);
+    }
+
+    [Fact]
     public void Create_allows_duplicate_business_names()
     {
         var businessName = "Acme Salon";
         var managerEmail = "manager@acme.com";
         var expiresAt = DateTimeOffset.UtcNow.AddDays(7);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result1 = Business.Create(businessName, managerEmail, expiresAt);
-        var result2 = Business.Create(businessName, managerEmail, expiresAt);
+        var result1 = Business.Create(businessName, managerEmail, expiresAt, actor);
+        var result2 = Business.Create(businessName, managerEmail, expiresAt, actor);
 
         Assert.True(result1.IsSuccess);
         Assert.True(result2.IsSuccess);
@@ -56,8 +68,9 @@ public class BusinessTests
     {
         var managerEmail = "manager@acme.com";
         var expiresAt = DateTimeOffset.UtcNow.AddDays(7);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result = Business.Create("   ", managerEmail, expiresAt);
+        var result = Business.Create("   ", managerEmail, expiresAt, actor);
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Contains("BusinessName", StringComparison.OrdinalIgnoreCase));
@@ -72,8 +85,9 @@ public class BusinessTests
     {
         var businessName = "Acme Salon";
         var expiresAt = DateTimeOffset.UtcNow.AddDays(7);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result = Business.Create(businessName, invalidEmail, expiresAt);
+        var result = Business.Create(businessName, invalidEmail, expiresAt, actor);
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Contains("ManagerEmail", StringComparison.OrdinalIgnoreCase));
@@ -85,8 +99,9 @@ public class BusinessTests
         var businessName = "Acme Salon";
         var managerEmail = "manager@acme.com";
         var expiresAt = DateTimeOffset.UtcNow.AddDays(-1);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result = Business.Create(businessName, managerEmail, expiresAt);
+        var result = Business.Create(businessName, managerEmail, expiresAt, actor);
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Contains("InvitationExpiresAt", StringComparison.OrdinalIgnoreCase));
@@ -99,8 +114,9 @@ public class BusinessTests
         var managerEmail = "manager@acme.com";
         var now = DateTimeOffset.UtcNow;
         var expiresAt = now.AddDays(31);
+        var actor = new ActorContext("PlatformAdmin", "admin-123");
 
-        var result = Business.Create(businessName, managerEmail, expiresAt, now);
+        var result = Business.Create(businessName, managerEmail, expiresAt, actor, now);
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Contains("InvitationExpiresAt", StringComparison.OrdinalIgnoreCase));

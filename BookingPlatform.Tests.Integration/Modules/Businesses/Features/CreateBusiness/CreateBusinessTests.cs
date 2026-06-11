@@ -196,6 +196,40 @@ public class CreateBusinessTests : IAsyncLifetime
         var allEvents = await session.Events.QueryAllRawEvents().ToListAsync();
         Assert.Empty(allEvents);
     }
+
+    [Fact]
+    public async Task Should_persist_actor_metadata_in_event_headers()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "Acme Salon",
+            ManagerEmail = "manager@acme.com",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(7)
+        };
+
+        var response = await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.WithRequestHeader("X-Actor-Role", "PlatformAdmin");
+            _.WithRequestHeader("X-Actor-Identity", "admin-42");
+            _.StatusCodeShouldBe(200);
+        });
+
+        var result = await response.ReadAsJsonAsync<CreateBusinessResponse>();
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var stream = await session.Events.FetchStreamAsync(result!.BusinessId);
+
+        Assert.Equal(3, stream.Count);
+        Assert.All(stream, e =>
+        {
+            Assert.NotNull(e.Headers);
+            Assert.Equal("PlatformAdmin", e.Headers["actor-role"]);
+            Assert.Equal("admin-42", e.Headers["actor-identity"]);
+        });
+    }
 }
 
 public record CreateBusinessResponse(

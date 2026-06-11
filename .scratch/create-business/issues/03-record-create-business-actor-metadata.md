@@ -14,13 +14,13 @@ Real authentication remains out of scope. Use the smallest domain-first mechanis
 
 ## Acceptance criteria
 
-- [ ] Successful `CreateBusiness` events include actor role metadata identifying a Platform Admin.
-- [ ] Successful `CreateBusiness` events include actor identity metadata.
-- [ ] Actor role and actor identity are stored as event metadata/envelope data, not as duplicated fields inside every domain event payload.
-- [ ] Integration tests verify actor metadata is persisted for the Business stream events created by `CreateBusiness`.
-- [ ] Unit tests cover actor context handling where domain decisions require it.
-- [ ] The implementation does not introduce real authentication or email delivery.
-- [ ] Architecture tests are expanded if needed to keep actor-context plumbing out of domain event payloads and preserve thin endpoint behavior.
+- [x] Successful `CreateBusiness` events include actor role metadata identifying a Platform Admin.
+- [x] Successful `CreateBusiness` events include actor identity metadata.
+- [x] Actor role and actor identity are stored as event metadata/envelope data, not as duplicated fields inside every domain event payload.
+- [x] Integration tests verify actor metadata is persisted for the Business stream events created by `CreateBusiness`.
+- [x] Unit tests cover actor context handling where domain decisions require it.
+- [x] The implementation does not introduce real authentication or email delivery.
+- [x] Architecture tests are expanded if needed to keep actor-context plumbing out of domain event payloads and preserve thin endpoint behavior.
 
 ## Blocked by
 

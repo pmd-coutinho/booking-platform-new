@@ -24,6 +24,7 @@ public class Business
         string businessName,
         string managerEmail,
         DateTimeOffset expiresAt,
+        ActorContext actor,
         DateTimeOffset? now = null)
     {
         var currentTime = now ?? DateTimeOffset.UtcNow;
@@ -66,6 +67,6 @@ public class Business
             new BusinessBookabilityChanged(status, reasons)
         };
 
-        return CreateBusinessResult.Success(businessId, invitationId, events);
+        return CreateBusinessResult.Success(businessId, invitationId, actor, events);
     }
 }

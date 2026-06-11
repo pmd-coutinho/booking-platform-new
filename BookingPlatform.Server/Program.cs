@@ -26,6 +26,7 @@ builder.Services.AddMarten(m =>
     m.Events.EnableEventSkippingInProjectionsOrSubscriptions = true;
     m.Events.UseIdentityMapForAggregates = true;
     m.Events.UseMandatoryStreamTypeDeclaration = true;
+    m.Events.MetadataConfig.HeadersEnabled = true;
     m.DisableNpgsqlLogging = true;
 })
 .UseLightweightSessions()

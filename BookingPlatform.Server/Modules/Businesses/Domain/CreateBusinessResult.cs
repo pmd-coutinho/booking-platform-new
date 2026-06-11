@@ -5,21 +5,23 @@ public record CreateBusinessResult
     public bool IsSuccess { get; }
     public Guid BusinessId { get; }
     public Guid InvitationId { get; }
+    public ActorContext Actor { get; }
     public object[] Events { get; } = [];
     public string[] Errors { get; } = [];
 
-    private CreateBusinessResult(bool isSuccess, Guid businessId, Guid invitationId, object[] events, string[] errors)
+    private CreateBusinessResult(bool isSuccess, Guid businessId, Guid invitationId, ActorContext actor, object[] events, string[] errors)
     {
         IsSuccess = isSuccess;
         BusinessId = businessId;
         InvitationId = invitationId;
+        Actor = actor;
         Events = events;
         Errors = errors;
     }
 
-    public static CreateBusinessResult Success(Guid businessId, Guid invitationId, object[] events) =>
-        new(true, businessId, invitationId, events, []);
+    public static CreateBusinessResult Success(Guid businessId, Guid invitationId, ActorContext actor, object[] events) =>
+        new(true, businessId, invitationId, actor, events, []);
 
     public static CreateBusinessResult Failure(string[] errors) =>
-        new(false, Guid.Empty, Guid.Empty, [], errors);
+        new(false, Guid.Empty, Guid.Empty, new ActorContext("Unknown", "Unknown"), [], errors);
 }

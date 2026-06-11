@@ -132,7 +132,26 @@ public class ArchitectureTests
     }
 
     // ------------------------------------------------------------------
-    // 4. Naming conventions
+    // 4. Actor context should not leak into domain event payloads
+    // ------------------------------------------------------------------
+
+    [Fact]
+    public void Domain_Events_Should_Not_Contain_Actor_Context_Properties()
+    {
+        var rule = Types()
+            .That().ResideInNamespace("BookingPlatform.Server.Modules.Businesses.Domain")
+            .And().HaveNameEndingWith("Created")
+            .Or().HaveNameEndingWith("Invited")
+            .Or().HaveNameEndingWith("Changed")
+            .Should().NotHavePropertyMemberWithName("Actor")
+            .AndShould().NotHavePropertyMemberWithName("ActorRole")
+            .AndShould().NotHavePropertyMemberWithName("ActorIdentity");
+
+        Assert.True(rule.HasNoViolations(SystemUnderTest), rule.Evaluate(SystemUnderTest).FirstOrDefault(r => !r.Passed)?.ToString());
+    }
+
+    // ------------------------------------------------------------------
+    // 5. Naming conventions
     // ------------------------------------------------------------------
 
     [Fact]
