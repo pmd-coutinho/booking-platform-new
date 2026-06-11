@@ -1,0 +1,33 @@
+# .NET build artifacts
+bin/
+obj/
+
+# Visual Studio / VS Code
+.vs/
+.vscode/*
+!.vscode/extensions.json
+
+# Rider / JetBrains
+.idea/
+
+# User secrets
+*.user
+*.suo
+*.userprefs
+
+# Publish output
+publish/
+out/
+
+# NuGet
+*.nupkg
+
+# Test results
+TestResults/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
