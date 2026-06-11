@@ -4,6 +4,7 @@ using Wolverine;
 using Wolverine.Http;
 using Wolverine.Marten;
 using JasperFx.Events;
+using JasperFx;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,8 @@ app.MapDefaultEndpoints();
 
 app.UseFileServer();
 
-await app.RunAsync();
-return 0;
+return await app.RunJasperFxCommands(args);
+
+public partial class Program { }
+
 
