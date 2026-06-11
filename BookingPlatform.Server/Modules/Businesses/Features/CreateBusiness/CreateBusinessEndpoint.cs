@@ -7,19 +7,29 @@ namespace BookingPlatform.Server.Modules.Businesses.Features.CreateBusiness;
 
 public static class CreateBusinessEndpoint
 {
-    [WolverinePost("/api/businesses")]
-    public static (CreateBusinessResponse, IStartStream) Post(CreateBusinessRequest request)
+    public static string[] Validate(CreateBusinessRequest request)
     {
-        var (businessId, invitationId, events) = Business.Create(
+        var result = Business.Create(
             request.BusinessName,
             request.ManagerEmail,
             request.InvitationExpiresAt);
 
-        var bookability = (BusinessBookabilityChanged)events[2];
+        return result.IsSuccess ? [] : result.Errors;
+    }
 
-        var start = StartStream<Business>(businessId, events);
+    [WolverinePost("/api/businesses")]
+    public static (CreateBusinessResponse, IStartStream) Post(CreateBusinessRequest request)
+    {
+        var result = Business.Create(
+            request.BusinessName,
+            request.ManagerEmail,
+            request.InvitationExpiresAt);
 
-        return (new CreateBusinessResponse(businessId, invitationId, bookability.Status, bookability.Reasons), start);
+        var bookability = (BusinessBookabilityChanged)result.Events[2];
+
+        var start = StartStream<Business>(result.BusinessId, result.Events);
+
+        return (new CreateBusinessResponse(result.BusinessId, result.InvitationId, bookability.Status, bookability.Reasons), start);
     }
 }
 

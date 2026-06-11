@@ -96,6 +96,106 @@ public class CreateBusinessTests : IAsyncLifetime
         Assert.Contains("ManagerNotAccepted", bookability.Reasons);
         Assert.Contains("OnboardingIncomplete", bookability.Reasons);
     }
+
+    [Fact]
+    public async Task Should_reject_blank_business_name_and_not_persist_events()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "   ",
+            ManagerEmail = "manager@acme.com",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(7)
+        };
+
+        var response = await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.StatusCodeShouldBe(400);
+            _.ContentTypeShouldBe("application/problem+json");
+        });
+
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var allEvents = await session.Events.QueryAllRawEvents().ToListAsync();
+        Assert.Empty(allEvents);
+    }
+
+    [Fact]
+    public async Task Should_reject_invalid_email_and_not_persist_events()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "Acme Salon",
+            ManagerEmail = "not-an-email",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(7)
+        };
+
+        await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.StatusCodeShouldBe(400);
+            _.ContentTypeShouldBe("application/problem+json");
+        });
+
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var allEvents = await session.Events.QueryAllRawEvents().ToListAsync();
+        Assert.Empty(allEvents);
+    }
+
+    [Fact]
+    public async Task Should_reject_past_expiry_and_not_persist_events()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "Acme Salon",
+            ManagerEmail = "manager@acme.com",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(-1)
+        };
+
+        await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.StatusCodeShouldBe(400);
+            _.ContentTypeShouldBe("application/problem+json");
+        });
+
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var allEvents = await session.Events.QueryAllRawEvents().ToListAsync();
+        Assert.Empty(allEvents);
+    }
+
+    [Fact]
+    public async Task Should_reject_expiry_beyond_maximum_and_not_persist_events()
+    {
+        Assert.NotNull(_host);
+
+        var request = new
+        {
+            BusinessName = "Acme Salon",
+            ManagerEmail = "manager@acme.com",
+            InvitationExpiresAt = DateTimeOffset.UtcNow.AddDays(31)
+        };
+
+        await _host!.Scenario(_ =>
+        {
+            _.Post.Json(request).ToUrl("/api/businesses");
+            _.StatusCodeShouldBe(400);
+            _.ContentTypeShouldBe("application/problem+json");
+        });
+
+        var store = _host.Services.GetRequiredService<IDocumentStore>();
+        await using var session = store.LightweightSession();
+        var allEvents = await session.Events.QueryAllRawEvents().ToListAsync();
+        Assert.Empty(allEvents);
+    }
 }
 
 public record CreateBusinessResponse(
