@@ -1,4 +1,9 @@
 using Scalar.AspNetCore;
+using Marten;
+using Wolverine;
+using Wolverine.Http;
+using Wolverine.Marten;
+using JasperFx.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +12,44 @@ builder.AddServiceDefaults();
 builder.AddRedisClientBuilder("cache")
     .WithOutputCache();
 builder.AddNpgsqlDataSource("bookingdb");
+
+// Configure Marten with greenfield optimized settings
+builder.Services.AddMarten(m =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("bookingdb")
+        ?? "Host=localhost;Port=5432;Database=bookingdb;Username=postgres;Password=postgres";
+    m.Connection(connectionString);
+    m.Events.AppendMode = EventAppendMode.Quick;
+    m.Events.UseArchivedStreamPartitioning = true;
+    m.Events.EnableAdvancedAsyncTracking = true;
+    m.Events.EnableEventSkippingInProjectionsOrSubscriptions = true;
+    m.Events.UseIdentityMapForAggregates = true;
+    m.Events.UseMandatoryStreamTypeDeclaration = true;
+    m.DisableNpgsqlLogging = true;
+})
+.UseLightweightSessions()
+.IntegrateWithWolverine(x =>
+{
+    x.UseWolverineManagedEventSubscriptionDistribution = true;
+});
+
+// Configure Wolverine with greenfield optimized settings
+builder.Host.UseWolverine(opts =>
+{
+    opts.UseRuntimeCompilation();
+
+    opts.Durability.EnableInboxPartitioning = true;
+    opts.Durability.InboxStaleTime = TimeSpan.FromMinutes(10);
+    opts.Durability.OutboxStaleTime = TimeSpan.FromMinutes(10);
+    opts.EnableAutomaticFailureAcks = false;
+    opts.UnknownMessageBehavior = UnknownMessageBehavior.DeadLetterQueue;
+
+    opts.Policies.AutoApplyTransactions();
+    opts.Policies.UseDurableLocalQueues();
+});
+
+// Add Wolverine HTTP endpoints
+builder.Services.AddWolverineHttp();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -27,31 +70,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseOutputCache();
 
-string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
-
-var api = app.MapGroup("/api");
-api.MapGet("weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.CacheOutput(p => p.Expire(TimeSpan.FromSeconds(5)))
-.WithName("GetWeatherForecast");
+// Map Wolverine HTTP endpoints
+app.MapWolverineEndpoints();
 
 app.MapDefaultEndpoints();
 
 app.UseFileServer();
 
-app.Run();
+await app.RunAsync();
+return 0;
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
