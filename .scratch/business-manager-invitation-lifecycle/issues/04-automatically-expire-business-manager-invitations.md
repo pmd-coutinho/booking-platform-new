@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: done
 
 # Automatically Expire Business Manager Invitations
 
@@ -14,16 +14,16 @@ The completed slice should be verifiable by creating a Business with an invitati
 
 ## Acceptance criteria
 
-- [ ] Creating a Business schedules automatic expiry for its initial Business Manager Invitation at the original invitation expiry deadline.
-- [ ] When the scheduled expiry runs for a pending due invitation, it appends `BusinessManagerInvitationExpired` with invitation identity and the original expiry deadline as expired time.
-- [ ] Expiry reconstructs Business state from Business stream history before deciding.
-- [ ] Expiry appends no `BusinessBookabilityChanged` event.
-- [ ] Expiry is a no-op if the Business Manager Invitation has already been accepted.
-- [ ] Expiry is a no-op if the Business Manager Invitation has already expired.
-- [ ] Expiry is a no-op if the Business Manager Invitation is not due yet.
-- [ ] Duplicate or retried scheduled expiry delivery does not append duplicate expiry events.
-- [ ] Wolverine scheduling tests verify the expiry message is scheduled and can be played/executed in tests.
-- [ ] Integration or handler-level tests verify due expiry and no-op expiry outcomes against persisted Business stream facts.
+- [x] Creating a Business schedules automatic expiry for its initial Business Manager Invitation at the original invitation expiry deadline.
+- [x] When the scheduled expiry runs for a pending due invitation, it appends `BusinessManagerInvitationExpired` with invitation identity and the original expiry deadline as expired time.
+- [x] Expiry reconstructs Business state from Business stream history before deciding.
+- [x] Expiry appends no `BusinessBookabilityChanged` event.
+- [x] Expiry is a no-op if the Business Manager Invitation has already been accepted.
+- [x] Expiry is a no-op if the Business Manager Invitation has already expired.
+- [x] Expiry is a no-op if the Business Manager Invitation is not due yet.
+- [x] Duplicate or retried scheduled expiry delivery does not append duplicate expiry events.
+- [x] Wolverine scheduling tests verify the expiry message is scheduled and can be played/executed in tests.
+- [x] Integration or handler-level tests verify due expiry and no-op expiry outcomes against persisted Business stream facts.
 
 ## Blocked by
 

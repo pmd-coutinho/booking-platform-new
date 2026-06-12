@@ -2,10 +2,11 @@ namespace BookingPlatform.Server.Modules.Businesses.Domain;
 
 public class Business
 {
-    public Guid Id { get; set; }
-    public string BusinessName { get; set; } = string.Empty;
-    public string BookabilityStatus { get; set; } = string.Empty;
-    public string[] BookabilityReasons { get; set; } = [];
+    public Guid Id { get; private set; }
+    public string BusinessName { get; private set; } = string.Empty;
+    public string BookabilityStatus { get; private set; } = string.Empty;
+    public string[] BookabilityReasons { get; private set; } = [];
+    public Dictionary<Guid, Invitation> Invitations { get; private set; } = [];
 
     private static bool IsValidEmail(string email)
     {
@@ -69,4 +70,139 @@ public class Business
 
         return CreateBusinessResult.Success(businessId, invitationId, actor, events);
     }
+
+    public static Business Rehydrate(object[] events)
+    {
+        var business = new Business();
+        foreach (var e in events)
+        {
+            business.Apply(e);
+        }
+
+        return business;
+    }
+
+    private void Apply(object e)
+    {
+        switch (e)
+        {
+            case BusinessCreated created:
+                Id = created.BusinessId;
+                BusinessName = created.BusinessName;
+                break;
+
+            case BusinessManagerInvited invited:
+                Invitations[invited.InvitationId] = new Invitation(
+                    invited.ManagerEmail,
+                    invited.ExpiresAt,
+                    InvitationState.Pending);
+                break;
+
+            case BusinessBookabilityChanged changed:
+                BookabilityStatus = changed.Status;
+                BookabilityReasons = changed.Reasons;
+                break;
+
+            case BusinessManagerInvitationAccepted accepted:
+                if (Invitations.TryGetValue(accepted.InvitationId, out var invitation))
+                {
+                    Invitations[accepted.InvitationId] = invitation with { State = InvitationState.Accepted };
+                }
+
+                break;
+
+            case BusinessManagerInvitationExpired expired:
+                if (Invitations.TryGetValue(expired.InvitationId, out var inv))
+                {
+                    Invitations[expired.InvitationId] = inv with { State = InvitationState.Expired };
+                }
+
+                break;
+        }
+    }
+
+    public AcceptInvitationResult AcceptInvitation(
+        Guid invitationId,
+        string managerEmail,
+        DateTimeOffset? now = null)
+    {
+        var acceptedAt = now ?? DateTimeOffset.UtcNow;
+        var normalizedEmail = managerEmail.Trim();
+
+        if (!Invitations.TryGetValue(invitationId, out var invitation))
+        {
+            return AcceptInvitationResult.Failure(["Invitation not found."]);
+        }
+
+        if (!string.Equals(invitation.ManagerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            return AcceptInvitationResult.Failure(["Manager email does not match invitation."]);
+        }
+
+        if (invitation.State == InvitationState.Accepted)
+        {
+            return AcceptInvitationResult.Success(
+                Id,
+                invitationId,
+                invitation.ManagerEmail,
+                BookabilityStatus,
+                BookabilityReasons,
+                []);
+        }
+
+        if (invitation.State == InvitationState.Expired || acceptedAt > invitation.ExpiresAt)
+        {
+            return AcceptInvitationResult.Failure(["Invitation has expired."]);
+        }
+
+        var reasons = new[] { "OnboardingIncomplete" };
+
+        var events = new object[]
+        {
+            new BusinessManagerInvitationAccepted(invitationId, invitation.ManagerEmail, acceptedAt),
+            new BusinessBookabilityChanged("Unbookable", reasons)
+        };
+
+        return AcceptInvitationResult.Success(
+            Id,
+            invitationId,
+            invitation.ManagerEmail,
+            "Unbookable",
+            reasons,
+            events);
+    }
+
+    public ExpireInvitationResult ExpireInvitation(
+        Guid invitationId,
+        DateTimeOffset? now = null)
+    {
+        var currentTime = now ?? DateTimeOffset.UtcNow;
+
+        if (!Invitations.TryGetValue(invitationId, out var invitation))
+        {
+            return ExpireInvitationResult.NoOp();
+        }
+
+        if (invitation.State != InvitationState.Pending)
+        {
+            return ExpireInvitationResult.NoOp();
+        }
+
+        if (currentTime < invitation.ExpiresAt)
+        {
+            return ExpireInvitationResult.NoOp();
+        }
+
+        var events = new object[]
+        {
+            new BusinessManagerInvitationExpired(invitationId, invitation.ExpiresAt)
+        };
+
+        return ExpireInvitationResult.Success(events);
+    }
 }
+
+public record Invitation(
+    string ManagerEmail,
+    DateTimeOffset ExpiresAt,
+    InvitationState State);

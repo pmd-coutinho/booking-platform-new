@@ -1,6 +1,6 @@
 using BookingPlatform.Server.Modules.Businesses.Domain;
 using JasperFx.Events;
-using Wolverine.Http;
+using Wolverine;
 using Wolverine.Marten;
 using static Wolverine.Marten.MartenOps;
 
@@ -8,8 +8,9 @@ namespace BookingPlatform.Server.Modules.Businesses;
 
 public static class CreateBusinessHandler
 {
-    public static (CreateBusinessResponse, IStartStream) Handle(
-        CreateBusinessResult result)
+    public static async Task<(CreateBusinessResponse, IStartStream)> Handle(
+        CreateBusinessResult result,
+        IMessageBus bus)
     {
         var bookability = (BusinessBookabilityChanged)result.Events[2];
 
@@ -27,6 +28,11 @@ public static class CreateBusinessHandler
         };
 
         var start = StartStream<Business>(result.BusinessId, events);
+
+        var invited = (BusinessManagerInvited)result.Events[1];
+        await bus.ScheduleAsync(
+            new ExpireInvitationMessage(result.BusinessId, invited.InvitationId),
+            invited.ExpiresAt);
 
         return (
             new CreateBusinessResponse(result.BusinessId, result.InvitationId, bookability.Status, bookability.Reasons),

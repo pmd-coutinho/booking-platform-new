@@ -1,3 +1,4 @@
+using Wolverine;
 using Wolverine.Http;
 using Wolverine.Marten;
 using BookingPlatform.Server.Modules.Businesses.Domain;
@@ -20,7 +21,10 @@ public static class CreateBusinessEndpoint
     }
 
     [WolverinePost("/api/businesses")]
-    public static (CreateBusinessResponse, IStartStream) Post(CreateBusinessRequest request, HttpContext httpContext)
+    public static async Task<(CreateBusinessResponse, IStartStream)> Post(
+        CreateBusinessRequest request,
+        HttpContext httpContext,
+        IMessageBus bus)
     {
         var actor = new ActorContext(
             httpContext.Request.Headers.TryGetValue("X-Actor-Role", out var role) ? role.ToString() : "Unknown",
@@ -32,7 +36,7 @@ public static class CreateBusinessEndpoint
             request.InvitationExpiresAt,
             actor);
 
-        return CreateBusinessHandler.Handle(result);
+        return await CreateBusinessHandler.Handle(result, bus);
     }
 }
 

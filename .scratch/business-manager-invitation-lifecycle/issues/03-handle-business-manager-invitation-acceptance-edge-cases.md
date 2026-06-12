@@ -14,16 +14,16 @@ The completed slice should make acceptance safe under user retries and invalid l
 
 ## Acceptance criteria
 
-- [ ] Acceptance for a missing Business rejects and appends no events.
-- [ ] Acceptance for a missing Business Manager Invitation rejects and appends no events.
-- [ ] Acceptance with a different manager email identity rejects and appends no events.
-- [ ] Acceptance after the invitation expiry deadline rejects and appends no events.
-- [ ] Acceptance after the invitation expiry deadline does not opportunistically append `BusinessManagerInvitationExpired`.
-- [ ] Repeating acceptance with the same manager email identity after prior acceptance returns current accepted state and appends no events.
-- [ ] Repeating acceptance with a different manager email identity after prior acceptance rejects and appends no events.
-- [ ] Tests assert event counts or stream facts to prove no-event outcomes where required.
-- [ ] Unit tests cover all acceptance no-event outcomes at the Business domain decision seam.
-- [ ] Integration tests cover representative HTTP no-event outcomes through the Server.
+- [x] Acceptance for a missing Business rejects and appends no events.
+- [x] Acceptance for a missing Business Manager Invitation rejects and appends no events.
+- [x] Acceptance with a different manager email identity rejects and appends no events.
+- [x] Acceptance after the invitation expiry deadline rejects and appends no events.
+- [x] Acceptance after the invitation expiry deadline does not opportunistically append `BusinessManagerInvitationExpired`.
+- [x] Repeating acceptance with the same manager email identity after prior acceptance returns current accepted state and appends no events.
+- [x] Repeating acceptance with a different manager email identity after prior acceptance rejects and appends no events.
+- [x] Tests assert event counts or stream facts to prove no-event outcomes where required.
+- [x] Unit tests cover all acceptance no-event outcomes at the Business domain decision seam.
+- [x] Integration tests cover representative HTTP no-event outcomes through the Server.
 
 ## Blocked by
 
