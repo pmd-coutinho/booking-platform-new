@@ -141,8 +141,16 @@ A platform operator who can create businesses, invite business managers, and per
 _Avoid_: Super admin, system admin
 
 **Business Manager Invitation**:
-An invitation for a person to become a business manager for a registered business.
+An invitation, addressed to a person's email identity, for that person to become a business manager for a registered business.
 _Avoid_: Owner invite, admin invite
+
+**Accepted Business Manager Invitation**:
+A business manager invitation that has been used by its invitee to become a business manager.
+_Avoid_: Claimed invite, completed invite
+
+**Expired Business Manager Invitation**:
+A business manager invitation that can no longer be accepted because its response period ended.
+_Avoid_: Timed-out invite, stale invite
 
 **Business Onboarding**:
 The process of completing a registered business's profile and scheduling setup so it can become bookable.
