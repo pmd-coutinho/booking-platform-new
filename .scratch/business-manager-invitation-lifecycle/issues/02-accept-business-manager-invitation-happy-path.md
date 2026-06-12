@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: done
 
 # Accept Business Manager Invitation Happy Path
 
@@ -14,17 +14,17 @@ The completed slice should be demoable by creating a Business, accepting its ini
 
 ## Acceptance criteria
 
-- [ ] A valid acceptance request for the initial Business Manager Invitation succeeds.
-- [ ] The acceptance route is scoped by both Business identity and invitation identity.
-- [ ] Manager email identity is normalized before matching and returning acceptance state.
-- [ ] Acceptance reconstructs Business state from Business stream history before deciding.
-- [ ] Successful acceptance appends `BusinessManagerInvitationAccepted` with invitation identity, normalized manager email, and server-supplied accepted time.
-- [ ] Successful acceptance appends `BusinessBookabilityChanged` because `ManagerNotAccepted` is removed.
-- [ ] After acceptance, Bookability status remains `Unbookable`.
-- [ ] After acceptance, Bookability Reasons contain `OnboardingIncomplete` and do not contain `ManagerNotAccepted`.
-- [ ] The acceptance response includes Business identity, invitation identity, normalized manager email, Bookability status, and Bookability Reasons.
-- [ ] Unit tests cover Business event reconstruction and the successful acceptance domain decision without infrastructure concerns.
-- [ ] Integration tests cover the successful HTTP behavior and persisted Business stream facts.
+- [x] A valid acceptance request for the initial Business Manager Invitation succeeds.
+- [x] The acceptance route is scoped by both Business identity and invitation identity.
+- [x] Manager email identity is normalized before matching and returning acceptance state.
+- [x] Acceptance reconstructs Business state from Business stream history before deciding.
+- [x] Successful acceptance appends `BusinessManagerInvitationAccepted` with invitation identity, normalized manager email, and server-supplied accepted time.
+- [x] Successful acceptance appends `BusinessBookabilityChanged` because `ManagerNotAccepted` is removed.
+- [x] After acceptance, Bookability status remains `Unbookable`.
+- [x] After acceptance, Bookability Reasons contain `OnboardingIncomplete` and do not contain `ManagerNotAccepted`.
+- [x] The acceptance response includes Business identity, invitation identity, normalized manager email, Bookability status, and Bookability Reasons.
+- [x] Unit tests cover Business event reconstruction and the successful acceptance domain decision without infrastructure concerns.
+- [x] Integration tests cover the successful HTTP behavior and persisted Business stream facts.
 
 ## Blocked by
 
