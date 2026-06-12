@@ -1,5 +1,6 @@
 using Scalar.AspNetCore;
 using BookingPlatform.Server;
+using BookingPlatform.Server.Modules.Businesses.Domain;
 using Marten;
 using Wolverine;
 using Wolverine.Http;
@@ -31,6 +32,7 @@ builder.Services.AddMarten(m =>
     m.Events.UseIdentityMapForAggregates = true;
     m.Events.UseMandatoryStreamTypeDeclaration = true;
     m.Events.MetadataConfig.HeadersEnabled = true;
+    m.Schema.For<SlugReservation>().UniqueIndex(x => x.Id);
     m.OpenTelemetry.TrackConnections = builder.Environment.IsDevelopment()
         ? TrackLevel.Verbose
         : TrackLevel.Normal;

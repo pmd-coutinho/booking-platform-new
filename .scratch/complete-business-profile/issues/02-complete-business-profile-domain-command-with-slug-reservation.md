@@ -1,4 +1,4 @@
-Status: needs-human
+Status: done
 
 ## Parent
 
@@ -20,12 +20,12 @@ The command is rejected if the business has no accepted manager, if the profile 
 
 ## Acceptance criteria
 
-- [ ] `CompleteBusinessProfile` domain command validates all fields and returns a `BusinessProfileCompleted` event.
-- [ ] `BusinessProfileCompleted` event contains all profile fields.
-- [ ] Bookability transitions correctly after profile completion: `Bookable` if only `ProfileIncomplete` was missing, otherwise `Unbookable` with remaining reasons.
-- [ ] Slug reservation table is created and enforces uniqueness at the database level.
-- [ ] Concurrent slug claims are rejected with a clear error.
-- [ ] Command rejects missing business, unaccepted manager, or already-completed profile.
+- [x] `CompleteBusinessProfile` domain command validates all fields and returns a `BusinessProfileCompleted` event.
+- [x] `BusinessProfileCompleted` event contains all profile fields.
+- [x] Bookability transitions correctly after profile completion: `Bookable` if only `ProfileIncomplete` was missing, otherwise `Unbookable` with remaining reasons.
+- [x] Slug reservation table is created and enforces uniqueness at the database level.
+- [x] Concurrent slug claims are rejected with a clear error.
+- [x] Command rejects missing business, unaccepted manager, or already-completed profile.
 
 ## Blocked by
 

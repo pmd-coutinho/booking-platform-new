@@ -1,4 +1,4 @@
-Status: needs-human
+Status: done
 
 ## Parent
 
@@ -20,11 +20,11 @@ Update architecture tests to enforce that endpoints remain thin and do not direc
 
 ## Acceptance criteria
 
-- [ ] `POST /api/businesses/{businessId}/profile` endpoint is implemented and returns correct status codes.
-- [ ] Integration tests cover all edge cases.
-- [ ] Unit tests cover domain command and validation.
-- [ ] Architecture tests continue to enforce thin endpoints.
-- [ ] All tests pass.
+- [x] `POST /api/businesses/{businessId}/profile` endpoint is implemented and returns correct status codes.
+- [x] Integration tests cover all edge cases.
+- [x] Unit tests cover domain command and validation.
+- [x] Architecture tests continue to enforce thin endpoints.
+- [x] All tests pass.
 
 ## Blocked by
 

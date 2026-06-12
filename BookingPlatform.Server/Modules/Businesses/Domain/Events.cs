@@ -16,3 +16,15 @@ public record BusinessManagerInvitationExpired(
 public record BusinessBookabilityChanged(
     string Status,
     string[] Reasons);
+
+public record BusinessProfileCompleted(
+    string PublicBusinessName,
+    string PublicBookingSlug,
+    string ContactPhone,
+    string ContactEmail,
+    string Street,
+    string City,
+    string PostalCode,
+    string Country,
+    string TimeZone,
+    string Currency);

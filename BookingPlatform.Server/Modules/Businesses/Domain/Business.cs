@@ -7,6 +7,7 @@ public class Business
     public string BookabilityStatus { get; private set; } = string.Empty;
     public string[] BookabilityReasons { get; private set; } = [];
     public Dictionary<Guid, Invitation> Invitations { get; private set; } = [];
+    public bool IsProfileCompleted { get; private set; }
 
     private static bool IsValidEmail(string email)
     {
@@ -118,6 +119,10 @@ public class Business
                 }
 
                 break;
+
+            case BusinessProfileCompleted completed:
+                IsProfileCompleted = true;
+                break;
         }
     }
 
@@ -205,6 +210,174 @@ public class Business
         };
 
         return ExpireInvitationResult.Success(events);
+    }
+
+    public CompleteBusinessProfileResult CompleteBusinessProfile(
+        string publicBusinessName,
+        string publicBookingSlug,
+        string contactPhone,
+        string contactEmail,
+        string street,
+        string city,
+        string postalCode,
+        string country,
+        string timeZone,
+        string currency,
+        bool slugExists)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(publicBusinessName))
+        {
+            errors.Add("PublicBusinessName is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(publicBookingSlug))
+        {
+            errors.Add("PublicBookingSlug is required.");
+        }
+        else if (!IsValidDnsLabel(publicBookingSlug))
+        {
+            errors.Add("PublicBookingSlug must be a valid DNS label (lowercase letters, numbers, hyphens; no leading or trailing hyphen; 1-63 characters).");
+        }
+
+        if (string.IsNullOrWhiteSpace(contactPhone))
+        {
+            errors.Add("ContactPhone is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contactEmail) || !IsValidEmail(contactEmail))
+        {
+            errors.Add("ContactEmail is invalid.");
+        }
+
+        if (string.IsNullOrWhiteSpace(street))
+        {
+            errors.Add("Street is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(city))
+        {
+            errors.Add("City is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(postalCode))
+        {
+            errors.Add("PostalCode is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(country))
+        {
+            errors.Add("Country is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(timeZone) || !IsValidTimeZone(timeZone))
+        {
+            errors.Add("TimeZone is invalid.");
+        }
+
+        if (string.IsNullOrWhiteSpace(currency) || !IsValidIsoCurrency(currency))
+        {
+            errors.Add("Currency is invalid.");
+        }
+
+        if (errors.Count > 0)
+        {
+            return CompleteBusinessProfileResult.Failure(errors.ToArray(), CompleteBusinessProfileFailureKind.BadRequest);
+        }
+
+        if (!Invitations.Values.Any(i => i.State == InvitationState.Accepted))
+        {
+            return CompleteBusinessProfileResult.Failure(
+                ["Business manager invitation has not been accepted."],
+                CompleteBusinessProfileFailureKind.NotFound);
+        }
+
+        if (IsProfileCompleted)
+        {
+            return CompleteBusinessProfileResult.Failure(
+                ["Business profile is already completed."],
+                CompleteBusinessProfileFailureKind.Conflict);
+        }
+
+        if (slugExists)
+        {
+            return CompleteBusinessProfileResult.Failure(
+                ["PublicBookingSlug is already taken."],
+                CompleteBusinessProfileFailureKind.Conflict);
+        }
+
+        var profileEvent = new BusinessProfileCompleted(
+            publicBusinessName,
+            publicBookingSlug,
+            contactPhone,
+            contactEmail,
+            street,
+            city,
+            postalCode,
+            country,
+            timeZone,
+            currency);
+
+        var remainingReasons = BookabilityReasons
+            .Where(r => r != "ProfileIncomplete")
+            .ToArray();
+
+        var status = remainingReasons.Length == 0 ? "Bookable" : "Unbookable";
+
+        var events = new object[]
+        {
+            profileEvent,
+            new BusinessBookabilityChanged(status, remainingReasons)
+        };
+
+        return CompleteBusinessProfileResult.Success(Id, status, remainingReasons, events);
+    }
+
+    private static bool IsValidDnsLabel(string slug)
+    {
+        if (string.IsNullOrEmpty(slug) || slug.Length > 63)
+        {
+            return false;
+        }
+
+        if (slug[0] == '-' || slug[^1] == '-')
+        {
+            return false;
+        }
+
+        foreach (var c in slug)
+        {
+            if (c != '-' && !char.IsLower(c) && !char.IsDigit(c))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsValidTimeZone(string timeZone)
+    {
+        try
+        {
+            TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidIsoCurrency(string currency)
+    {
+        if (currency.Length != 3)
+        {
+            return false;
+        }
+
+        return currency.All(char.IsLetter);
     }
 }
 
