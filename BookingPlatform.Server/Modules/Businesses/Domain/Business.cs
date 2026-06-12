@@ -59,7 +59,7 @@ public class Business
         var businessId = Guid.NewGuid();
         var invitationId = Guid.NewGuid();
         var status = "Unbookable";
-        var reasons = new[] { "ManagerNotAccepted", "OnboardingIncomplete" };
+        var reasons = new[] { "ManagerNotAccepted" };
 
         var events = new object[]
         {
@@ -161,7 +161,7 @@ public class Business
                 AcceptBusinessManagerInvitationFailureKind.Conflict);
         }
 
-        var reasons = new[] { "OnboardingIncomplete" };
+        var reasons = new[] { "ProfileIncomplete", "NoStaffMembers", "NoAppointmentTypes", "NoStaffCapabilities", "NoBusinessHours", "NoStaffAvailability" };
 
         var events = new object[]
         {

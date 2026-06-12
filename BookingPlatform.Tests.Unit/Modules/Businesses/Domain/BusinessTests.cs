@@ -32,7 +32,6 @@ public class BusinessTests
         var bookability = Assert.IsType<BusinessBookabilityChanged>(result.Events[2]);
         Assert.Equal("Unbookable", bookability.Status);
         Assert.Contains("ManagerNotAccepted", bookability.Reasons);
-        Assert.Contains("OnboardingIncomplete", bookability.Reasons);
     }
 
     [Fact]
@@ -137,7 +136,6 @@ public class BusinessTests
         Assert.Equal("Acme Salon", business.BusinessName);
         Assert.Equal("Unbookable", business.BookabilityStatus);
         Assert.Contains("ManagerNotAccepted", business.BookabilityReasons);
-        Assert.Contains("OnboardingIncomplete", business.BookabilityReasons);
         Assert.True(business.Invitations.ContainsKey(createResult.InvitationId));
         Assert.Equal(InvitationState.Pending, business.Invitations[createResult.InvitationId].State);
     }
@@ -161,7 +159,12 @@ public class BusinessTests
         Assert.Equal("manager@acme.com", result.ManagerEmail);
         Assert.Equal("Unbookable", result.BookabilityStatus);
         Assert.DoesNotContain("ManagerNotAccepted", result.BookabilityReasons);
-        Assert.Contains("OnboardingIncomplete", result.BookabilityReasons);
+        Assert.Contains("ProfileIncomplete", result.BookabilityReasons);
+        Assert.Contains("NoStaffMembers", result.BookabilityReasons);
+        Assert.Contains("NoAppointmentTypes", result.BookabilityReasons);
+        Assert.Contains("NoStaffCapabilities", result.BookabilityReasons);
+        Assert.Contains("NoBusinessHours", result.BookabilityReasons);
+        Assert.Contains("NoStaffAvailability", result.BookabilityReasons);
         Assert.Equal(2, result.Events.Length);
 
         var accepted = Assert.IsType<BusinessManagerInvitationAccepted>(result.Events[0]);
@@ -172,7 +175,12 @@ public class BusinessTests
         var bookability = Assert.IsType<BusinessBookabilityChanged>(result.Events[1]);
         Assert.Equal("Unbookable", bookability.Status);
         Assert.DoesNotContain("ManagerNotAccepted", bookability.Reasons);
-        Assert.Contains("OnboardingIncomplete", bookability.Reasons);
+        Assert.Contains("ProfileIncomplete", bookability.Reasons);
+        Assert.Contains("NoStaffMembers", bookability.Reasons);
+        Assert.Contains("NoAppointmentTypes", bookability.Reasons);
+        Assert.Contains("NoStaffCapabilities", bookability.Reasons);
+        Assert.Contains("NoBusinessHours", bookability.Reasons);
+        Assert.Contains("NoStaffAvailability", bookability.Reasons);
     }
 
     [Fact]

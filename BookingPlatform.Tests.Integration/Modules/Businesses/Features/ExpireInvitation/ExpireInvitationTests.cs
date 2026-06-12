@@ -44,7 +44,7 @@ public class ExpireInvitationTests : IAsyncLifetime
         {
             new BusinessCreated(businessId, "Acme Salon"),
             new BusinessManagerInvited(invitationId, "manager@acme.com", pastExpiry),
-            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted", "OnboardingIncomplete" })
+            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted" })
         };
 
         var store = _host.Services.GetRequiredService<IDocumentStore>();
@@ -67,7 +67,7 @@ public class ExpireInvitationTests : IAsyncLifetime
         {
             new BusinessCreated(businessId, "Acme Salon"),
             new BusinessManagerInvited(invitationId, "manager@acme.com", futureExpiry),
-            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted", "OnboardingIncomplete" })
+            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted" })
         };
 
         var store = _host.Services.GetRequiredService<IDocumentStore>();

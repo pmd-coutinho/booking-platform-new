@@ -105,15 +105,27 @@ The public-facing name, booking slug, contact information, and physical address 
 _Avoid_: Company profile, merchant profile
 
 **Public Booking Slug**:
-A unique platform URL identifier customers use to find a business's booking page.
-_Avoid_: Business slug, vanity URL
+A unique platform subdomain customers use to find a business's booking page.
+_Avoid_: Business slug, vanity URL, booking path
 
 **Custom Booking Domain**:
 A business-owned web domain used for the business's booking page.
 _Avoid_: Custom URL, external domain
 
+**Business Contact**:
+The phone and email identity customers use to reach a business.
+_Avoid_: Contact info, business phone
+
+**Business Address**:
+The street, city, postal code, and country where a business is located.
+_Avoid_: Location, physical address
+
+**Business Time Zone**:
+The IANA time zone a business uses to define local appointment dates and available slots.
+_Avoid_: Provider time zone, calendar time zone
+
 **Business Currency**:
-The currency a business uses for appointment prices.
+The ISO 4217 currency a business uses for appointment prices.
 _Avoid_: Platform currency, price currency
 
 **Registered Business**:

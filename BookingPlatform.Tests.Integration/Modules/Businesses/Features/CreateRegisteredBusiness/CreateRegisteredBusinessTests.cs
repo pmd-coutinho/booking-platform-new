@@ -57,7 +57,6 @@ public class CreateRegisteredBusinessTests : IAsyncLifetime
         Assert.Equal($"/api/businesses/{result.BusinessId}", response.Context.Response.Headers.Location.ToString());
         Assert.Equal("Unbookable", result.BookabilityStatus);
         Assert.Contains("ManagerNotAccepted", result.BookabilityReasons);
-        Assert.Contains("OnboardingIncomplete", result.BookabilityReasons);
     }
 
     [Fact]
@@ -96,7 +95,6 @@ public class CreateRegisteredBusinessTests : IAsyncLifetime
         var bookability = Assert.IsType<BusinessBookabilityChanged>(stream[2].Data);
         Assert.Equal("Unbookable", bookability.Status);
         Assert.Contains("ManagerNotAccepted", bookability.Reasons);
-        Assert.Contains("OnboardingIncomplete", bookability.Reasons);
     }
 
     [Fact]

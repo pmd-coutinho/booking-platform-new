@@ -67,7 +67,7 @@ public class AcceptBusinessManagerInvitationTests : IAsyncLifetime
         {
             new BusinessCreated(businessId, "Acme Salon"),
             new BusinessManagerInvited(invitationId, "manager@acme.com", pastExpiry),
-            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted", "OnboardingIncomplete" })
+            new BusinessBookabilityChanged("Unbookable", new[] { "ManagerNotAccepted" })
         };
 
         var store = _host.Services.GetRequiredService<IDocumentStore>();
@@ -99,7 +99,12 @@ public class AcceptBusinessManagerInvitationTests : IAsyncLifetime
         Assert.Equal("manager@acme.com", result.ManagerEmail);
         Assert.Equal("Unbookable", result.BookabilityStatus);
         Assert.DoesNotContain("ManagerNotAccepted", result.BookabilityReasons);
-        Assert.Contains("OnboardingIncomplete", result.BookabilityReasons);
+        Assert.Contains("ProfileIncomplete", result.BookabilityReasons);
+        Assert.Contains("NoStaffMembers", result.BookabilityReasons);
+        Assert.Contains("NoAppointmentTypes", result.BookabilityReasons);
+        Assert.Contains("NoStaffCapabilities", result.BookabilityReasons);
+        Assert.Contains("NoBusinessHours", result.BookabilityReasons);
+        Assert.Contains("NoStaffAvailability", result.BookabilityReasons);
     }
 
     [Fact]
@@ -138,7 +143,12 @@ public class AcceptBusinessManagerInvitationTests : IAsyncLifetime
         var updatedBookability = Assert.IsType<BusinessBookabilityChanged>(stream[4].Data);
         Assert.Equal("Unbookable", updatedBookability.Status);
         Assert.DoesNotContain("ManagerNotAccepted", updatedBookability.Reasons);
-        Assert.Contains("OnboardingIncomplete", updatedBookability.Reasons);
+        Assert.Contains("ProfileIncomplete", updatedBookability.Reasons);
+        Assert.Contains("NoStaffMembers", updatedBookability.Reasons);
+        Assert.Contains("NoAppointmentTypes", updatedBookability.Reasons);
+        Assert.Contains("NoStaffCapabilities", updatedBookability.Reasons);
+        Assert.Contains("NoBusinessHours", updatedBookability.Reasons);
+        Assert.Contains("NoStaffAvailability", updatedBookability.Reasons);
     }
 
     [Fact]
