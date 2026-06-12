@@ -1,14 +1,14 @@
 using Alba;
-using BookingPlatform.Server.Modules.Businesses;
 using BookingPlatform.Server.Modules.Businesses.Domain;
+using BookingPlatform.Server.Modules.Businesses.Features.CreateRegisteredBusiness;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace BookingPlatform.Tests.Integration.Modules.Businesses.Features.CreateBusiness;
+namespace BookingPlatform.Tests.Integration.Modules.Businesses.Features.CreateRegisteredBusiness;
 
-public class CreateBusinessTests : IAsyncLifetime
+public class CreateRegisteredBusinessTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17").Build();
     private IAlbaHost? _host;
@@ -47,13 +47,14 @@ public class CreateBusinessTests : IAsyncLifetime
         var response = await _host!.Scenario(_ =>
         {
             _.Post.Json(request).ToUrl("/api/businesses");
-            _.StatusCodeShouldBe(200);
+            _.StatusCodeShouldBe(201);
         });
 
-        var result = await response.ReadAsJsonAsync<CreateBusinessResponse>();
+        var result = await response.ReadAsJsonAsync<CreateRegisteredBusinessResponse>();
         Assert.NotNull(result);
         Assert.NotEqual(Guid.Empty, result.BusinessId);
         Assert.NotEqual(Guid.Empty, result.InvitationId);
+        Assert.Equal($"/api/businesses/{result.BusinessId}", response.Context.Response.Headers.Location.ToString());
         Assert.Equal("Unbookable", result.BookabilityStatus);
         Assert.Contains("ManagerNotAccepted", result.BookabilityReasons);
         Assert.Contains("OnboardingIncomplete", result.BookabilityReasons);
@@ -74,10 +75,10 @@ public class CreateBusinessTests : IAsyncLifetime
         var response = await _host!.Scenario(_ =>
         {
             _.Post.Json(request).ToUrl("/api/businesses");
-            _.StatusCodeShouldBe(200);
+            _.StatusCodeShouldBe(201);
         });
 
-        var result = await response.ReadAsJsonAsync<CreateBusinessResponse>();
+        var result = await response.ReadAsJsonAsync<CreateRegisteredBusinessResponse>();
         var store = _host.Services.GetRequiredService<IDocumentStore>();
         await using var session = store.LightweightSession();
         var stream = await session.Events.FetchStreamAsync(result!.BusinessId);
@@ -215,10 +216,10 @@ public class CreateBusinessTests : IAsyncLifetime
             _.Post.Json(request).ToUrl("/api/businesses");
             _.WithRequestHeader("X-Actor-Role", "PlatformAdmin");
             _.WithRequestHeader("X-Actor-Identity", "admin-42");
-            _.StatusCodeShouldBe(200);
+            _.StatusCodeShouldBe(201);
         });
 
-        var result = await response.ReadAsJsonAsync<CreateBusinessResponse>();
+        var result = await response.ReadAsJsonAsync<CreateRegisteredBusinessResponse>();
         var store = _host.Services.GetRequiredService<IDocumentStore>();
         await using var session = store.LightweightSession();
         var stream = await session.Events.FetchStreamAsync(result!.BusinessId);
@@ -232,5 +233,3 @@ public class CreateBusinessTests : IAsyncLifetime
         });
     }
 }
-
-

@@ -1,11 +1,12 @@
 using BookingPlatform.Server.Modules.Businesses;
 using BookingPlatform.Server.Modules.Businesses.Domain;
+using BookingPlatform.Server.Modules.Businesses.Features.CreateRegisteredBusiness;
 using Wolverine;
 using Xunit;
 
 namespace BookingPlatform.Tests.Unit.Modules.Businesses;
 
-public class CreateBusinessHandlerTests
+public class CreateRegisteredBusinessHandlerTests
 {
     [Fact]
     public async Task Handle_schedules_expiry_message_at_invitation_expiry()
@@ -17,7 +18,8 @@ public class CreateBusinessHandlerTests
             new ActorContext("PlatformAdmin", "admin-123"));
 
         var context = new TestMessageContext();
-        var (response, _) = await CreateBusinessHandler.Handle(result, context);
+        var handler = new CreateRegisteredBusinessHandler(context);
+        await handler.Handle(result);
 
         var scheduled = context.ScheduledMessages().ShouldHaveEnvelopeForMessageType<ExpireInvitationMessage>();
         var message = Assert.IsType<ExpireInvitationMessage>(scheduled.Message);

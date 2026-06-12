@@ -143,7 +143,7 @@ public class BusinessTests
     }
 
     [Fact]
-    public void AcceptInvitation_produces_accepted_and_bookability_changed_events()
+    public void AcceptBusinessManagerInvitation_produces_accepted_and_bookability_changed_events()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -153,7 +153,7 @@ public class BusinessTests
 
         var business = Business.Rehydrate(createResult.Events);
         var now = DateTimeOffset.UtcNow;
-        var result = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com", now);
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com", now);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(createResult.BusinessId, result.BusinessId);
@@ -176,7 +176,7 @@ public class BusinessTests
     }
 
     [Fact]
-    public void AcceptInvitation_normalizes_email_by_trimming_whitespace()
+    public void AcceptBusinessManagerInvitation_normalizes_email_by_trimming_whitespace()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -185,14 +185,14 @@ public class BusinessTests
             new ActorContext("PlatformAdmin", "admin-123"));
 
         var business = Business.Rehydrate(createResult.Events);
-        var result = business.AcceptInvitation(createResult.InvitationId, "  manager@acme.com  ");
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "  manager@acme.com  ");
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Events.Length);
     }
 
     [Fact]
-    public void AcceptInvitation_matches_email_case_insensitively()
+    public void AcceptBusinessManagerInvitation_matches_email_case_insensitively()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -201,14 +201,14 @@ public class BusinessTests
             new ActorContext("PlatformAdmin", "admin-123"));
 
         var business = Business.Rehydrate(createResult.Events);
-        var result = business.AcceptInvitation(createResult.InvitationId, "MANAGER@ACME.COM");
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "MANAGER@ACME.COM");
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Events.Length);
     }
 
     [Fact]
-    public void AcceptInvitation_is_idempotent_when_already_accepted_by_same_email()
+    public void AcceptBusinessManagerInvitation_is_idempotent_when_already_accepted_by_same_email()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -218,7 +218,7 @@ public class BusinessTests
 
         var business = Business.Rehydrate(createResult.Events);
 
-        var first = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com");
+        var first = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com");
 
         Assert.True(first.IsSuccess);
         Assert.Equal(2, first.Events.Length);
@@ -226,7 +226,7 @@ public class BusinessTests
         business = Business.Rehydrate(
             [.. createResult.Events, .. first.Events]);
 
-        var second = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com");
+        var second = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com");
 
         Assert.True(second.IsSuccess);
         Assert.Empty(second.Events);
@@ -234,7 +234,7 @@ public class BusinessTests
     }
 
     [Fact]
-    public void AcceptInvitation_rejects_wrong_email()
+    public void AcceptBusinessManagerInvitation_rejects_wrong_email()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -243,15 +243,16 @@ public class BusinessTests
             new ActorContext("PlatformAdmin", "admin-123"));
 
         var business = Business.Rehydrate(createResult.Events);
-        var result = business.AcceptInvitation(createResult.InvitationId, "other@acme.com");
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "other@acme.com");
 
         Assert.False(result.IsSuccess);
         Assert.Empty(result.Events);
-        Assert.Contains(result.Errors, e => e.Contains("email", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(AcceptBusinessManagerInvitationFailureKind.NotFound, result.FailureKind);
+        Assert.Contains(result.Errors, e => e.Contains("not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void AcceptInvitation_rejects_missing_invitation()
+    public void AcceptBusinessManagerInvitation_rejects_missing_invitation()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -260,7 +261,7 @@ public class BusinessTests
             new ActorContext("PlatformAdmin", "admin-123"));
 
         var business = Business.Rehydrate(createResult.Events);
-        var result = business.AcceptInvitation(Guid.NewGuid(), "manager@acme.com");
+        var result = business.AcceptBusinessManagerInvitation(Guid.NewGuid(), "manager@acme.com");
 
         Assert.False(result.IsSuccess);
         Assert.Empty(result.Events);
@@ -268,7 +269,7 @@ public class BusinessTests
     }
 
     [Fact]
-    public void AcceptInvitation_rejects_expired_invitation()
+    public void AcceptBusinessManagerInvitation_rejects_expired_invitation()
     {
         var now = DateTimeOffset.UtcNow;
         var createResult = Business.Create(
@@ -281,15 +282,16 @@ public class BusinessTests
         var business = Business.Rehydrate(createResult.Events);
 
         var expiredNow = now.AddDays(8);
-        var result = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com", expiredNow);
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com", expiredNow);
 
         Assert.False(result.IsSuccess);
+        Assert.Equal(AcceptBusinessManagerInvitationFailureKind.Conflict, result.FailureKind);
         Assert.Empty(result.Events);
         Assert.Contains(result.Errors, e => e.Contains("expired", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void AcceptInvitation_rejects_different_email_after_prior_acceptance()
+    public void AcceptBusinessManagerInvitation_rejects_different_email_after_prior_acceptance()
     {
         var createResult = Business.Create(
             "Acme Salon",
@@ -299,22 +301,23 @@ public class BusinessTests
 
         var business = Business.Rehydrate(createResult.Events);
 
-        var acceptResult = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com");
+        var acceptResult = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com");
         Assert.True(acceptResult.IsSuccess);
         Assert.Equal(2, acceptResult.Events.Length);
 
         business = Business.Rehydrate(
             [.. createResult.Events, .. acceptResult.Events]);
 
-        var second = business.AcceptInvitation(createResult.InvitationId, "other@acme.com");
+        var second = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "other@acme.com");
 
         Assert.False(second.IsSuccess);
         Assert.Empty(second.Events);
-        Assert.Contains(second.Errors, e => e.Contains("email", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(AcceptBusinessManagerInvitationFailureKind.NotFound, second.FailureKind);
+        Assert.Contains(second.Errors, e => e.Contains("not found", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public void AcceptInvitation_does_not_opportunistically_append_expired_event()
+    public void AcceptBusinessManagerInvitation_does_not_opportunistically_append_expired_event()
     {
         var now = DateTimeOffset.UtcNow;
         var createResult = Business.Create(
@@ -327,7 +330,7 @@ public class BusinessTests
         var business = Business.Rehydrate(createResult.Events);
 
         var expiredNow = now.AddDays(8);
-        var result = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com", expiredNow);
+        var result = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com", expiredNow);
 
         Assert.False(result.IsSuccess);
         Assert.Empty(result.Events);
@@ -367,7 +370,7 @@ public class BusinessTests
 
         var business = Business.Rehydrate(createResult.Events);
 
-        var acceptResult = business.AcceptInvitation(createResult.InvitationId, "manager@acme.com");
+        var acceptResult = business.AcceptBusinessManagerInvitation(createResult.InvitationId, "manager@acme.com");
         Assert.True(acceptResult.IsSuccess);
 
         business = Business.Rehydrate(

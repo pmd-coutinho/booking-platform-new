@@ -1,6 +1,13 @@
 namespace BookingPlatform.Server.Modules.Businesses.Domain;
 
-public record AcceptInvitationResult
+public enum AcceptBusinessManagerInvitationFailureKind
+{
+    None,
+    NotFound,
+    Conflict
+}
+
+public record AcceptBusinessManagerInvitationResult
 {
     public bool IsSuccess { get; }
     public Guid BusinessId { get; }
@@ -10,8 +17,9 @@ public record AcceptInvitationResult
     public string[] BookabilityReasons { get; } = [];
     public object[] Events { get; } = [];
     public string[] Errors { get; } = [];
+    public AcceptBusinessManagerInvitationFailureKind FailureKind { get; }
 
-    private AcceptInvitationResult(
+    private AcceptBusinessManagerInvitationResult(
         bool isSuccess,
         Guid businessId,
         Guid invitationId,
@@ -19,7 +27,8 @@ public record AcceptInvitationResult
         string bookabilityStatus,
         string[] bookabilityReasons,
         object[] events,
-        string[] errors)
+        string[] errors,
+        AcceptBusinessManagerInvitationFailureKind failureKind)
     {
         IsSuccess = isSuccess;
         BusinessId = businessId;
@@ -29,17 +38,18 @@ public record AcceptInvitationResult
         BookabilityReasons = bookabilityReasons;
         Events = events;
         Errors = errors;
+        FailureKind = failureKind;
     }
 
-    public static AcceptInvitationResult Success(
+    public static AcceptBusinessManagerInvitationResult Success(
         Guid businessId,
         Guid invitationId,
         string managerEmail,
         string bookabilityStatus,
         string[] bookabilityReasons,
         object[] events) =>
-        new(true, businessId, invitationId, managerEmail, bookabilityStatus, bookabilityReasons, events, []);
+        new(true, businessId, invitationId, managerEmail, bookabilityStatus, bookabilityReasons, events, [], AcceptBusinessManagerInvitationFailureKind.None);
 
-    public static AcceptInvitationResult Failure(string[] errors) =>
-        new(false, Guid.Empty, Guid.Empty, string.Empty, string.Empty, [], [], errors);
+    public static AcceptBusinessManagerInvitationResult Failure(string[] errors, AcceptBusinessManagerInvitationFailureKind failureKind) =>
+        new(false, Guid.Empty, Guid.Empty, string.Empty, string.Empty, [], [], errors, failureKind);
 }

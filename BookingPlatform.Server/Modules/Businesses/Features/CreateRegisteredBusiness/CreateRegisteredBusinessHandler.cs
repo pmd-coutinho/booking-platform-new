@@ -4,13 +4,11 @@ using Wolverine;
 using Wolverine.Marten;
 using static Wolverine.Marten.MartenOps;
 
-namespace BookingPlatform.Server.Modules.Businesses;
+namespace BookingPlatform.Server.Modules.Businesses.Features.CreateRegisteredBusiness;
 
-public static class CreateBusinessHandler
+public class CreateRegisteredBusinessHandler(IMessageBus bus)
 {
-    public static async Task<(CreateBusinessResponse, IStartStream)> Handle(
-        CreateBusinessResult result,
-        IMessageBus bus)
+    public async Task<(CreateRegisteredBusinessResponse, IStartStream)> Handle(CreateRegisteredBusinessResult result)
     {
         var bookability = (BusinessBookabilityChanged)result.Events[2];
 
@@ -35,14 +33,8 @@ public static class CreateBusinessHandler
             invited.ExpiresAt);
 
         return (
-            new CreateBusinessResponse(result.BusinessId, result.InvitationId, bookability.Status, bookability.Reasons),
+            new CreateRegisteredBusinessResponse(result.BusinessId, result.InvitationId, bookability.Status, bookability.Reasons),
             start
         );
     }
 }
-
-public record CreateBusinessResponse(
-    Guid BusinessId,
-    Guid InvitationId,
-    string BookabilityStatus,
-    string[] BookabilityReasons);

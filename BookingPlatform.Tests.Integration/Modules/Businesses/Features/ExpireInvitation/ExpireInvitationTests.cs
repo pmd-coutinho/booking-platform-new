@@ -137,7 +137,7 @@ public class ExpireInvitationTests : IAsyncLifetime
         var events = stream.Select(e => e.Data).ToArray();
         var business = Business.Rehydrate(events);
 
-        var acceptResult = business.AcceptInvitation(invitationId, "manager@acme.com");
+        var acceptResult = business.AcceptBusinessManagerInvitation(invitationId, "manager@acme.com");
         Assert.True(acceptResult.IsSuccess);
         acceptSession.Events.Append(businessId, acceptResult.Events);
         await acceptSession.SaveChangesAsync();

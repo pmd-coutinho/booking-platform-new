@@ -1,10 +1,13 @@
 using Scalar.AspNetCore;
+using BookingPlatform.Server;
 using Marten;
 using Wolverine;
 using Wolverine.Http;
+using Wolverine.Http.FluentValidation;
 using Wolverine.Marten;
 using JasperFx.Events;
 using JasperFx;
+using JasperFx.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,7 @@ builder.AddServiceDefaults();
 builder.AddRedisClientBuilder("cache")
     .WithOutputCache();
 builder.AddNpgsqlDataSource("bookingdb");
+builder.Services.AddBusinessesModule();
 
 // Configure Marten with greenfield optimized settings
 builder.Services.AddMarten(m =>
@@ -27,6 +31,10 @@ builder.Services.AddMarten(m =>
     m.Events.UseIdentityMapForAggregates = true;
     m.Events.UseMandatoryStreamTypeDeclaration = true;
     m.Events.MetadataConfig.HeadersEnabled = true;
+    m.OpenTelemetry.TrackConnections = builder.Environment.IsDevelopment()
+        ? TrackLevel.Verbose
+        : TrackLevel.Normal;
+    m.OpenTelemetry.TrackEventCounters();
     m.DisableNpgsqlLogging = true;
 })
 .UseLightweightSessions()
@@ -67,13 +75,22 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.WithTitle("Booking Platform Server")
+            .ShowOperationId()
+            .SortTagsAlphabetically()
+            .SortOperationsByMethod();
+    });
 }
 
 app.UseOutputCache();
 
 // Map Wolverine HTTP endpoints
-app.MapWolverineEndpoints();
+app.MapWolverineEndpoints(options =>
+{
+    options.UseFluentValidationProblemDetailMiddleware();
+});
 
 app.MapDefaultEndpoints();
 

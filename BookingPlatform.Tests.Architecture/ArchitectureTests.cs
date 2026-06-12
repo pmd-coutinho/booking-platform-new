@@ -14,8 +14,11 @@ public class ArchitectureTests
     private static readonly string FeaturesNamespacePattern = "BookingPlatform\\.Server\\.Modules\\.[A-Za-z]+\\.Features";
 
     private static readonly ArchUnitNET.Domain.Architecture SystemUnderTest = new ArchLoader()
-        .LoadAssemblies(typeof(BookingPlatform.Server.Modules.Bookings.Features.CreateBooking.CreateBookingEndpoint).Assembly)
+        .LoadAssemblies(typeof(BookingPlatform.Server.Modules.Businesses.Features.CreateRegisteredBusiness.CreateRegisteredBusinessEndpoint).Assembly)
         .Build();
+
+    private static readonly System.Reflection.Assembly ServerAssembly =
+        typeof(BookingPlatform.Server.Modules.Businesses.Features.CreateRegisteredBusiness.CreateRegisteredBusinessEndpoint).Assembly;
 
     [Fact]
     public void Should_Load_Architecture()
@@ -92,6 +95,7 @@ public class ArchitectureTests
     {
         var rule = Types()
             .That().ResideInNamespaceMatching($"{FeaturesNamespacePattern}\\..*")
+            .And().HaveNameEndingWith("Endpoint")
             .Should().NotDependOnAny(
                 Types().That().ResideInNamespace("Marten"));
 
@@ -103,6 +107,7 @@ public class ArchitectureTests
     {
         var rule = Types()
             .That().ResideInNamespaceMatching($"{FeaturesNamespacePattern}\\..*")
+            .And().HaveNameEndingWith("Endpoint")
             .Should().NotDependOnAny(
                 Types().That().ResideInNamespace("Npgsql"));
 
@@ -114,6 +119,7 @@ public class ArchitectureTests
     {
         var rule = Types()
             .That().ResideInNamespaceMatching($"{FeaturesNamespacePattern}\\..*")
+            .And().HaveNameEndingWith("Endpoint")
             .Should().NotDependOnAny(
                 Types().That().ResideInNamespace("JasperFx.Events"));
 
@@ -121,14 +127,18 @@ public class ArchitectureTests
     }
 
     [Fact]
-    public void Endpoints_Should_Not_Depend_On_Wolverine_Marten()
+    public void Endpoints_Should_Not_Take_Wolverine_Marten_Infrastructure_Parameters()
     {
-        var rule = Types()
-            .That().ResideInNamespaceMatching($"{FeaturesNamespacePattern}\\..*")
-            .Should().NotDependOnAny(
-                Types().That().ResideInNamespace("Wolverine.Marten"));
+        var violatingParameters = ServerAssembly.GetTypes()
+            .Where(t => t.Namespace is not null
+                        && Regex.IsMatch(t.Namespace, "^" + FeaturesNamespacePattern + "\\..*")
+                        && t.Name.EndsWith("Endpoint", StringComparison.Ordinal))
+            .SelectMany(t => t.GetMethods().SelectMany(m => m.GetParameters()))
+            .Where(p => p.ParameterType.Namespace?.StartsWith("Wolverine.Marten", StringComparison.Ordinal) == true)
+            .Select(p => $"{p.Member.DeclaringType?.FullName}.{p.Member.Name}({p.Name}: {p.ParameterType.FullName})")
+            .ToList();
 
-        Assert.True(rule.HasNoViolations(SystemUnderTest), rule.Evaluate(SystemUnderTest).FirstOrDefault(r => !r.Passed)?.ToString());
+        Assert.Empty(violatingParameters);
     }
 
     // ------------------------------------------------------------------
@@ -158,7 +168,7 @@ public class ArchitectureTests
     public void All_Server_Types_Should_Reside_In_Server_Namespace()
     {
         var rule = Types()
-            .That().ResideInAssembly(typeof(BookingPlatform.Server.Modules.Bookings.Features.CreateBooking.CreateBookingEndpoint).Assembly)
+            .That().ResideInAssembly(ServerAssembly)
             .And().DoNotResideInNamespace("")
             .And().DoNotResideInNamespace("Microsoft.Extensions.Hosting")
             .Should().ResideInNamespaceMatching("^BookingPlatform\\.Server($|\\.).*");

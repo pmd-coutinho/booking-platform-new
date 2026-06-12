@@ -1,6 +1,6 @@
 namespace BookingPlatform.Server.Modules.Businesses.Domain;
 
-public record CreateBusinessResult
+public record CreateRegisteredBusinessResult
 {
     public bool IsSuccess { get; }
     public Guid BusinessId { get; }
@@ -9,7 +9,7 @@ public record CreateBusinessResult
     public object[] Events { get; } = [];
     public string[] Errors { get; } = [];
 
-    private CreateBusinessResult(bool isSuccess, Guid businessId, Guid invitationId, ActorContext actor, object[] events, string[] errors)
+    private CreateRegisteredBusinessResult(bool isSuccess, Guid businessId, Guid invitationId, ActorContext actor, object[] events, string[] errors)
     {
         IsSuccess = isSuccess;
         BusinessId = businessId;
@@ -19,9 +19,9 @@ public record CreateBusinessResult
         Errors = errors;
     }
 
-    public static CreateBusinessResult Success(Guid businessId, Guid invitationId, ActorContext actor, object[] events) =>
+    public static CreateRegisteredBusinessResult Success(Guid businessId, Guid invitationId, ActorContext actor, object[] events) =>
         new(true, businessId, invitationId, actor, events, []);
 
-    public static CreateBusinessResult Failure(string[] errors) =>
+    public static CreateRegisteredBusinessResult Failure(string[] errors) =>
         new(false, Guid.Empty, Guid.Empty, new ActorContext("Unknown", "Unknown"), [], errors);
 }

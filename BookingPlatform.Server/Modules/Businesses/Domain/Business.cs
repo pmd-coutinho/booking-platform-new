@@ -21,7 +21,7 @@ public class Business
         }
     }
 
-    public static CreateBusinessResult Create(
+    public static CreateRegisteredBusinessResult Create(
         string businessName,
         string managerEmail,
         DateTimeOffset expiresAt,
@@ -53,7 +53,7 @@ public class Business
 
         if (errors.Count > 0)
         {
-            return CreateBusinessResult.Failure(errors.ToArray());
+            return CreateRegisteredBusinessResult.Failure(errors.ToArray());
         }
 
         var businessId = Guid.NewGuid();
@@ -68,7 +68,7 @@ public class Business
             new BusinessBookabilityChanged(status, reasons)
         };
 
-        return CreateBusinessResult.Success(businessId, invitationId, actor, events);
+        return CreateRegisteredBusinessResult.Success(businessId, invitationId, actor, events);
     }
 
     public static Business Rehydrate(object[] events)
@@ -121,7 +121,7 @@ public class Business
         }
     }
 
-    public AcceptInvitationResult AcceptInvitation(
+    public AcceptBusinessManagerInvitationResult AcceptBusinessManagerInvitation(
         Guid invitationId,
         string managerEmail,
         DateTimeOffset? now = null)
@@ -131,17 +131,21 @@ public class Business
 
         if (!Invitations.TryGetValue(invitationId, out var invitation))
         {
-            return AcceptInvitationResult.Failure(["Invitation not found."]);
+            return AcceptBusinessManagerInvitationResult.Failure(
+                ["Business manager invitation was not found."],
+                AcceptBusinessManagerInvitationFailureKind.NotFound);
         }
 
         if (!string.Equals(invitation.ManagerEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase))
         {
-            return AcceptInvitationResult.Failure(["Manager email does not match invitation."]);
+            return AcceptBusinessManagerInvitationResult.Failure(
+                ["Business manager invitation was not found."],
+                AcceptBusinessManagerInvitationFailureKind.NotFound);
         }
 
         if (invitation.State == InvitationState.Accepted)
         {
-            return AcceptInvitationResult.Success(
+            return AcceptBusinessManagerInvitationResult.Success(
                 Id,
                 invitationId,
                 invitation.ManagerEmail,
@@ -152,7 +156,9 @@ public class Business
 
         if (invitation.State == InvitationState.Expired || acceptedAt > invitation.ExpiresAt)
         {
-            return AcceptInvitationResult.Failure(["Invitation has expired."]);
+            return AcceptBusinessManagerInvitationResult.Failure(
+                ["The business manager invitation has expired."],
+                AcceptBusinessManagerInvitationFailureKind.Conflict);
         }
 
         var reasons = new[] { "OnboardingIncomplete" };
@@ -163,7 +169,7 @@ public class Business
             new BusinessBookabilityChanged("Unbookable", reasons)
         };
 
-        return AcceptInvitationResult.Success(
+        return AcceptBusinessManagerInvitationResult.Success(
             Id,
             invitationId,
             invitation.ManagerEmail,
