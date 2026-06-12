@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: ready-for-human
 
 # Preserve Thin Business Command Seam
 
@@ -14,13 +14,13 @@ The completed slice should be observable through the existing Create Business HT
 
 ## Acceptance criteria
 
-- [ ] Valid Create Business requests still create a Registered Business, initial Business Manager Invitation, and initial Unbookable Bookability state.
-- [ ] Create Business events still persist in one Business stream transaction.
-- [ ] Actor metadata for Create Business events is still persisted as event metadata/envelope data, not event payload fields.
-- [ ] Invalid Create Business requests still reject without appending events.
-- [ ] Feature endpoints do not directly depend on Marten, JasperFx event APIs, Npgsql, or Wolverine.Marten infrastructure details.
-- [ ] Domain decision code remains testable without HTTP transport or persistence infrastructure.
-- [ ] Existing Create Business unit, integration, and architecture tests pass or are updated to assert the same external behavior through the intended seam.
+- [x] Valid Create Business requests still create a Registered Business, initial Business Manager Invitation, and initial Unbookable Bookability state.
+- [x] Create Business events still persist in one Business stream transaction.
+- [x] Actor metadata for Create Business events is still persisted as event metadata/envelope data, not event payload fields.
+- [x] Invalid Create Business requests still reject without appending events.
+- [x] Feature endpoints do not directly depend on Marten, JasperFx event APIs, Npgsql, or Wolverine.Marten infrastructure details.
+- [x] Domain decision code remains testable without HTTP transport or persistence infrastructure.
+- [x] Existing Create Business unit, integration, and architecture tests pass or are updated to assert the same external behavior through the intended seam.
 
 ## Blocked by
 

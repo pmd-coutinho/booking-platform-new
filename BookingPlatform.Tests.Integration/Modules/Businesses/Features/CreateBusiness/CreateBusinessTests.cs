@@ -1,4 +1,5 @@
 using Alba;
+using BookingPlatform.Server.Modules.Businesses;
 using BookingPlatform.Server.Modules.Businesses.Domain;
 using Marten;
 using Microsoft.Extensions.DependencyInjection;
@@ -232,8 +233,4 @@ public class CreateBusinessTests : IAsyncLifetime
     }
 }
 
-public record CreateBusinessResponse(
-    Guid BusinessId,
-    Guid InvitationId,
-    string BookabilityStatus,
-    string[] BookabilityReasons);
+
